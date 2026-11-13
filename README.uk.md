@@ -2,6 +2,10 @@
 
 [English](README.md) | **Українська**
 
+<p align="center">
+  <img src="docs/screenshot.png" alt="yudl-tui-v1 screenshot" width="500">
+</p>
+
 **YouTube-завантажувач з термінальним інтерфейсом.** Go + [bubbletea](https://github.com/charmbracelet/bubbletea).
 Без GUI, Python і зайвих файлів.
 
