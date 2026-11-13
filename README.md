@@ -27,17 +27,31 @@ Version **1** · author **RoboLask** · license **MIT**
 
 Go 1.24+ is required.
 
+### 1. Clone the repository
+
 ```bash
-# clone the repository
 git clone https://github.com/RoboLask/yudl-tui-v1
+```
+
+### 2. Go to the folder and run
+
+```bash
 cd yudl-tui-v1
-
-# from source
 go run main.go
+```
 
-# build
-go build -o bin/yudl.exe .    # Windows
-go build -o bin/yudl .        # Linux / macOS
+### 3. Build a binary
+
+Windows:
+
+```bash
+go build -o bin/yudl.exe .
+```
+
+Linux / macOS:
+
+```bash
+go build -o bin/yudl .
 ```
 
 A ready-to-run binary is in `bin/yudl.exe`.

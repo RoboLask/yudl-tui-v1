@@ -27,17 +27,31 @@
 
 Потрібен Go 1.24+.
 
+### 1. Клонувати репозиторій
+
 ```bash
-# клонувати репозиторій
 git clone https://github.com/RoboLask/yudl-tui-v1
+```
+
+### 2. Перейти в папку і запустити
+
+```bash
 cd yudl-tui-v1
-
-# з вихідного коду
 go run main.go
+```
 
-# збірка
-go build -o bin/yudl.exe .    # Windows
-go build -o bin/yudl .        # Linux / macOS
+### 3. Зібрати бінарник
+
+Windows:
+
+```bash
+go build -o bin/yudl.exe .
+```
+
+Linux / macOS:
+
+```bash
+go build -o bin/yudl .
 ```
 
 Готовий бінарник — `bin/yudl.exe`.
