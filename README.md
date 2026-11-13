@@ -73,6 +73,9 @@ found nearby, in `PATH` or in the standard locations.
 
 You can point to your own copy with the `YUDL_FFMPEG` environment variable.
 
+`yt-dlp` is downloaded into the `tools/` folder next to the program, so the
+program root stays clean.
+
 ## Project structure
 
 ```
@@ -85,6 +88,7 @@ settings.json  settings (with comments)
 LICENSE        MIT license
 bin/           built binary
 ffmpeg/        downloaded FFmpeg (created automatically)
+tools/         downloaded yt-dlp (created automatically)
 ```
 
 ## License

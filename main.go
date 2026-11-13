@@ -235,7 +235,7 @@ var translations = map[string]map[string]string{
 		"label_format":      "format",
 		"label_folder":      "folder",
 		"no_reencode":       "no re-encode",
-		"stopped_mark":      "■ stopped",
+		"stopped_mark":      "stopped",
 		"type_video":        "Video",
 		"type_audio":        "Audio",
 		"quality_best":      "Best",
@@ -271,7 +271,7 @@ var translations = map[string]map[string]string{
 		"label_format":      "формат",
 		"label_folder":      "папка",
 		"no_reencode":       "без перекодування",
-		"stopped_mark":      "■ зупинено",
+		"stopped_mark":      "зупинено",
 		"type_video":        "Відео",
 		"type_audio":        "Аудіо",
 		"quality_best":      "Найкраще",
@@ -693,13 +693,14 @@ type streamEvent struct {
 }
 
 // ytDlpTarget — куда скачивается yt-dlp при первом запуске.
-func ytDlpTarget() string { return filepath.Join(appDir(), exeName("yt-dlp")) }
+// Лежит в папке tools/, чтобы не засорять корень программы.
+func ytDlpTarget() string { return filepath.Join(appDir(), "tools", exeName("yt-dlp")) }
 
-// ytDlpPath ищет yt-dlp рядом с программой, в кэше и в PATH.
+// ytDlpPath ищет yt-dlp в tools/, рядом с программой и в PATH.
 func ytDlpPath() string {
 	for _, base := range appDirs() {
 		for _, c := range []string{
-			filepath.Join(base, exeName("yt-dlp")),
+			filepath.Join(base, "tools", exeName("yt-dlp")),
 			filepath.Join(base, "bin", exeName("yt-dlp")),
 		} {
 			if fi, err := os.Stat(c); err == nil && fi.Mode().IsRegular() {
@@ -1066,6 +1067,13 @@ func tick() tea.Cmd {
 	return tea.Tick(90*time.Millisecond, func(time.Time) tea.Msg { return tickMsg{} })
 }
 
+// clipboardMsg — результат асинхронного чтения буфера обмена.
+type clipboardMsg struct{ text string }
+
+func readClipboardCmd() tea.Cmd {
+	return func() tea.Msg { return clipboardMsg{text: ReadClipboard()} }
+}
+
 func (m tuiModel) Init() tea.Cmd { return tick() }
 
 func (m tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -1076,6 +1084,13 @@ func (m tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tuiMsg:
 		return m.handleDownloadMsg(msg)
+
+	case clipboardMsg:
+		if m.step == stepAskURL && msg.text != "" {
+			m.url = msg.text
+			m.err = ""
+		}
+		return m, nil
 
 	case tea.KeyMsg:
 		// вставка из терминала приходит как Runes с флагом Paste
@@ -1132,10 +1147,7 @@ func (m tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.url = m.url[:len(m.url)-1]
 				}
 			case "ctrl+v", "ctrl+shift+v":
-				if clip := ReadClipboard(); clip != "" {
-					m.url = clip
-					m.err = ""
-				}
+				return m, readClipboardCmd()
 			default:
 				// ctrl/alt-сочетания и управляющие символы в URL не попадают
 				if strings.HasPrefix(k, "ctrl+") || strings.HasPrefix(k, "alt+") {
@@ -1500,13 +1512,13 @@ func (m tuiModel) View() string {
 
 	case stepDone:
 		if m.err != "" {
-			b.WriteString(styleRed.Render("  ✗ " + m.tr("error")))
+			b.WriteString(styleRed.Render("  " + m.tr("error")))
 			b.WriteString("\n\n")
 			b.WriteString("  " + styleWhite.Render(m.err) + "\n")
 		} else if m.status == m.tr("stopped") {
 			b.WriteString(styleDim.Render("  "+m.tr("stopped_mark")) + "\n")
 		} else {
-			b.WriteString(m.gradText("  ✓ " + m.tr("complete")))
+			b.WriteString(m.gradText("  " + m.tr("complete")))
 			b.WriteString("\n\n")
 			b.WriteString("  " + styleDim.Render(m.tr("label_folder")+"  ") + styleWhite.Render(m.outPath) + "\n")
 		}
