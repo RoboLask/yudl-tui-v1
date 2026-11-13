@@ -28,6 +28,10 @@ Version **1** · author **RoboLask** · license **MIT**
 Go 1.24+ is required.
 
 ```bash
+# clone the repository
+git clone https://github.com/RoboLask/yudl-tui-v1
+cd yudl-tui-v1
+
 # from source
 go run main.go
 

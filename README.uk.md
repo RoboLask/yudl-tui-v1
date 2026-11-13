@@ -28,6 +28,10 @@
 Потрібен Go 1.24+.
 
 ```bash
+# клонувати репозиторій
+git clone https://github.com/RoboLask/yudl-tui-v1
+cd yudl-tui-v1
+
 # з вихідного коду
 go run main.go
 
