@@ -1,0 +1,10 @@
+{
+  // Папка, куда сохраняются загрузки. Можно указать любую.
+  "output_path": "C:/Users/msx/Downloads",
+
+  // Язык интерфейса: "en" (English) или "uk" (Українська).
+  "language": "uk",
+
+  // Цвет градиента: "red", "green" или "turquoise".
+  "color_theme": "turquoise"
+}
