@@ -34,6 +34,32 @@ go build -o bin/yudl .        # Linux / macOS
 
 A ready-to-run binary is in `bin/yudl.exe`.
 
+## Linux
+
+> **Note:** Linux support is prepared but **not tested yet**. The code
+> cross-compiles for Linux, but the program has not been run on Linux.
+
+```bash
+go build -o bin/yudl .
+./bin/yudl
+```
+
+- Run the program from a folder you can write to (for example `~/yudl`):
+  `settings.json`, `ffmpeg/` and `tools/` are created next to the binary.
+  If the binary is in a read-only location such as `/usr/bin`, saving settings
+  and downloading FFmpeg / yt-dlp will not work.
+- `Ctrl+V` needs `wl-clipboard` (Wayland) or `xclip` / `xsel` (X11).
+  Terminal paste (usually `Ctrl+Shift+V`) works without these packages.
+- FFmpeg is taken from `PATH`, `/usr/local/bin`, `/usr/bin` or downloaded as a
+  static build into `ffmpeg/`.
+
+Clipboard packages:
+
+```bash
+sudo apt install wl-clipboard   # Wayland
+sudo apt install xclip          # X11
+```
+
 ## Settings
 
 All settings live in **`settings.json`** next to the program (in the project
@@ -42,11 +68,13 @@ Change the values, save the file and restart the program.
 
 ```json
 {
-  // Folder where downloads are saved. Any folder works.
-  "output_path": "C:/Users/me/Downloads",
+  // Folder where downloads are saved.
+  // Leave "" to use the system Downloads folder automatically,
+  // or put your own path, for example "D:/Video".
+  "output_path": "",
 
   // Interface language: "en" (English) or "uk" (Українська).
-  "language": "uk",
+  "language": "en",
 
   // Gradient color: "red", "green" or "turquoise".
   "color_theme": "turquoise"
@@ -55,12 +83,13 @@ Change the values, save the file and restart the program.
 
 | Field | What it sets | Options |
 |---|---|---|
-| `output_path` | download folder | any folder: `C:/Users/me/Downloads`, `D:/Video` |
+| `output_path` | download folder | `""` — auto (system Downloads), or any folder: `C:/Users/me/Downloads`, `D:/Video` |
 | `language` | interface language | `en` — English, `uk` — Українська |
 | `color_theme` | gradient color | `red`, `green`, `turquoise` |
 
-Defaults: `~/Downloads`, `en`, `turquoise`. If the file is missing, the program
-creates it automatically.
+Defaults: empty `output_path` (auto-detected system Downloads), `en`,
+`turquoise`. If the file is missing, the program creates it automatically.
+Set `output_path` manually at any time — the program will use it as is.
 
 ## FFmpeg
 

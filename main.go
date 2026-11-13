@@ -173,8 +173,16 @@ func stripJSONComments(data []byte) []byte {
 	return out
 }
 
+// outDir — папка загрузок: если в настройках пусто, берётся системная.
+func (s Settings) outDir() string {
+	if strings.TrimSpace(s.OutputPath) == "" {
+		return defaultDownloadDir()
+	}
+	return s.OutputPath
+}
+
 func loadSettings() Settings {
-	s := Settings{OutputPath: defaultDownloadDir(), Language: "en", ColorTheme: ColorTurquoise}
+	s := Settings{Language: "en", ColorTheme: ColorTurquoise}
 	data, err := os.ReadFile(settingsPath())
 	if err != nil {
 		return s
@@ -203,11 +211,12 @@ func jsonString(v string) string {
 // save пишет settings.json с комментариями, которые можно читать и править.
 func (s Settings) save() {
 	out := "{\n" +
-		"  // Папка, куда сохраняются загрузки. Можно указать любую.\n" +
+		"  // Папка, куди зберігаються завантаження.\n" +
+		"  // Порожній рядок — брати системну папку завантажень автоматично.\n" +
 		"  \"output_path\": " + jsonString(s.OutputPath) + ",\n\n" +
-		"  // Язык интерфейса: \"en\" (English) или \"uk\" (Українська).\n" +
+		"  // Мова інтерфейсу: \"en\" (English) або \"uk\" (Українська).\n" +
 		"  \"language\": " + jsonString(s.Language) + ",\n\n" +
-		"  // Цвет градиента: \"red\", \"green\" или \"turquoise\".\n" +
+		"  // Колір градієнта: \"red\", \"green\" або \"turquoise\".\n" +
 		"  \"color_theme\": " + jsonString(s.ColorTheme) + "\n" +
 		"}\n"
 	_ = os.WriteFile(settingsPath(), []byte(out), 0o644)
@@ -1027,7 +1036,7 @@ func NewTUI(url string) tuiModel {
 	s := loadSettings()
 	m := tuiModel{
 		lang:    s.Language,
-		outPath: s.OutputPath,
+		outPath: s.outDir(),
 		baseHue: colorHue(s.ColorTheme),
 		status:  tr(s.Language, "ready"),
 	}
