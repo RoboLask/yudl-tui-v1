@@ -81,18 +81,30 @@ func homeDir() string {
 	return "."
 }
 
-// appDir — папка программы: настройки и FFmpeg лежат рядом с ней.
+// appDir — корень программы: здесь лежат settings.json, ffmpeg/ и yt-dlp.
+// Если exe запущен из bin/, берётся папка уровнем выше.
 func appDir() string {
 	if wd, err := os.Getwd(); err == nil && dirWritable(wd) {
-		return wd
+		if fileExists(filepath.Join(wd, "go.mod")) || fileExists(filepath.Join(wd, "main.go")) {
+			return wd
+		}
 	}
 	if exe, err := os.Executable(); err == nil {
 		if real, err := filepath.EvalSymlinks(exe); err == nil {
 			exe = real
 		}
-		return filepath.Dir(exe)
+		dir := filepath.Dir(exe)
+		if filepath.Base(dir) == "bin" {
+			dir = filepath.Dir(dir)
+		}
+		return dir
 	}
 	return "."
+}
+
+func fileExists(path string) bool {
+	fi, err := os.Stat(path)
+	return err == nil && fi.Mode().IsRegular()
 }
 
 func dirWritable(dir string) bool {
@@ -234,6 +246,11 @@ var translations = map[string]map[string]string{
 		"hint_m4a":          "source AAC copy, no re-encode",
 		"hint_wav":          "uncompressed",
 		"hint_flac":         "lossless",
+		"hint_url":          "enter — next     ·     esc — exit",
+		"hint_choose":       "↑ ↓ — select     ·     enter — next     ·     esc — back",
+		"hint_confirm":      "enter — download     ·     esc — back",
+		"hint_cancel":       "esc — cancel",
+		"hint_done":         "enter — exit     ·     esc — again",
 	},
 	"uk": {
 		"ready":             "Готовий",
@@ -265,6 +282,11 @@ var translations = map[string]map[string]string{
 		"hint_m4a":          "копія AAC, без перекодування",
 		"hint_wav":          "без стиснення",
 		"hint_flac":         "без втрат",
+		"hint_url":          "enter — далі     ·     esc — вихід",
+		"hint_choose":       "↑ ↓ — вибір     ·     enter — далі     ·     esc — назад",
+		"hint_confirm":      "enter — завантажити     ·     esc — назад",
+		"hint_cancel":       "esc — скасувати",
+		"hint_done":         "enter — вихід     ·     esc — ще раз",
 	},
 }
 
@@ -915,6 +937,44 @@ func sanitizePaste(s string) string {
 	return strings.TrimSpace(printableText(s))
 }
 
+// ReadClipboard читает системный буфер обмена.
+//
+// Windows: PowerShell Get-Clipboard (встроен в систему)
+// macOS:   pbpaste
+// Linux:   wl-paste / xclip / xsel (что найдётся)
+func ReadClipboard() string {
+	switch runtime.GOOS {
+	case "windows":
+		out, err := exec.Command("powershell", "-NoProfile", "-NonInteractive", "-Command",
+			"$OutputEncoding=[Console]::OutputEncoding=[Text.Encoding]::UTF8; Get-Clipboard -Raw").Output()
+		if err != nil {
+			return ""
+		}
+		return sanitizePaste(string(out))
+	case "darwin":
+		out, err := exec.Command("pbpaste").Output()
+		if err != nil {
+			return ""
+		}
+		return sanitizePaste(string(out))
+	default:
+		for _, candidate := range [][]string{
+			{"wl-paste", "--no-newline"},
+			{"xclip", "-selection", "clipboard", "-o"},
+			{"xsel", "--clipboard", "--output"},
+		} {
+			if _, err := exec.LookPath(candidate[0]); err != nil {
+				continue
+			}
+			out, err := exec.Command(candidate[0], candidate[1:]...).Output()
+			if err == nil {
+				return sanitizePaste(string(out))
+			}
+		}
+		return ""
+	}
+}
+
 // ==== TUI ====
 
 type step int
@@ -1070,6 +1130,11 @@ func (m tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "backspace", "ctrl+h":
 				if len(m.url) > 0 {
 					m.url = m.url[:len(m.url)-1]
+				}
+			case "ctrl+v", "ctrl+shift+v":
+				if clip := ReadClipboard(); clip != "" {
+					m.url = clip
+					m.err = ""
 				}
 			default:
 				// ctrl/alt-сочетания и управляющие символы в URL не попадают
@@ -1321,6 +1386,7 @@ var (
 	styleFaint = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#555555"))
 	styleWhite = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#EEEEEE"))
 	styleRed   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF5F5F"))
+	styleHint  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#9A9A9A"))
 	styleTrack = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#2A2A2A"))
 )
 
@@ -1392,6 +1458,7 @@ func (m tuiModel) View() string {
 		if m.err != "" {
 			b.WriteString("\n  " + styleRed.Render("✗ "+m.err) + "\n")
 		}
+		b.WriteString("\n  " + styleHint.Render(m.tr("hint_url")) + "\n")
 
 	case stepType, stepQuality:
 		title := m.tr("what_download")
@@ -1406,6 +1473,7 @@ func (m tuiModel) View() string {
 		b.WriteString(m.gradText("  " + title))
 		b.WriteString("\n\n")
 		b.WriteString(m.listView(opts))
+		b.WriteString("\n  " + styleHint.Render(m.tr("hint_choose")) + "\n")
 
 	case stepConfirm:
 		req := m.request()
@@ -1421,12 +1489,14 @@ func (m tuiModel) View() string {
 		b.WriteString("  " + styleDim.Render(m.tr("label_link")+"   ") + styleWhite.Render(shortURL(req.URL)) + "\n")
 		b.WriteString("  " + styleDim.Render(m.tr("label_format")+"   ") + acc.Render(kind) + "\n")
 		b.WriteString("  " + styleDim.Render(m.tr("label_folder")+"    ") + styleWhite.Render(req.OutputPath) + "\n")
+		b.WriteString("\n  " + styleHint.Render(m.tr("hint_confirm")) + "\n")
 
 	case stepDownloading:
 		b.WriteString(m.gradText("  " + m.tr("downloading")))
 		b.WriteString("\n\n")
 		b.WriteString("  " + m.progressView() + "   " + acc.Render(fmt.Sprintf("%3d%%", m.percent)) + "\n")
 		b.WriteString("\n  " + styleWhite.Render(m.status) + "\n")
+		b.WriteString("\n  " + styleHint.Render(m.tr("hint_cancel")) + "\n")
 
 	case stepDone:
 		if m.err != "" {
@@ -1440,6 +1510,7 @@ func (m tuiModel) View() string {
 			b.WriteString("\n\n")
 			b.WriteString("  " + styleDim.Render(m.tr("label_folder")+"  ") + styleWhite.Render(m.outPath) + "\n")
 		}
+		b.WriteString("\n  " + styleHint.Render(m.tr("hint_done")) + "\n")
 	}
 
 	return lipgloss.NewStyle().Padding(1, 1).Render(b.String())

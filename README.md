@@ -1,89 +1,92 @@
 # yudl-tui-v1
 
-**YouTube-загрузчик с терминальным интерфейсом.** Go + [bubbletea](https://github.com/charmbracelet/bubbletea).
-Без GUI, Python и лишних файлов.
+**English** | [Українська](README.uk.md)
 
-Версия **1** · автор **RoboLask** · лицензия **MIT**
+**YouTube downloader with a terminal interface.** Go + [bubbletea](https://github.com/charmbracelet/bubbletea).
+No GUI, no Python, no extra files.
 
-## Возможности
+Version **1** · author **RoboLask** · license **MIT**
 
-- Интерактивный мастер: ссылка → видео/аудио → качество/формат → прогресс.
-- Переливающийся градиент в логотипе, заголовках и прогресс-баре.
-- Цвет градиента выбирается в настройках: красный, зелёный, бирюзовый.
-- Языки интерфейса: **English**, **Українська**.
-- **Видео** — готовые MP4-потоки склеиваются без перекодирования.
-- **Аудио M4A** — исходный AAC копируется без перекодирования.
-- **MP3 / WAV / FLAC** — один проход извлечения звука.
-- **FFmpeg и yt-dlp** находятся автоматически или скачиваются один раз рядом с программой.
-- Один файл исходников — `main.go`.
+## Features
 
-## Запуск
+- Interactive wizard: link → video/audio → quality/format → progress.
+- Animated iridescent gradient in the logo, headings and progress bar.
+- Gradient color is set in the settings: red, green or turquoise.
+- Interface languages: **English**, **Українська**.
+- **Video** — ready-made MP4 streams are merged without re-encoding.
+- **Audio M4A** — the original AAC stream is copied without re-encoding.
+- **MP3 / WAV / FLAC** — a single audio extraction pass.
+- **FFmpeg and yt-dlp** are found automatically or downloaded once next to the program.
+- A single source file — `main.go`.
 
-Нужен Go 1.24+.
+## Running
+
+Go 1.24+ is required.
 
 ```bash
-# из исходников
+# from source
 go run main.go
 
-# сборка
+# build
 go build -o bin/yudl.exe .    # Windows
 go build -o bin/yudl .        # Linux / macOS
 ```
 
-Готовый бинарник — `bin/yudl.exe`.
+A ready-to-run binary is in `bin/yudl.exe`.
 
-## Настройки
+## Settings
 
-Все настройки лежат в файле **`settings.json`** рядом с программой (в корне
-проекта). В нём можно писать комментарии `//` — программа их игнорирует.
-Меняешь значения, сохраняешь файл и перезапускаешь программу.
+All settings live in **`settings.json`** next to the program (in the project
+root). You can use `//` comments inside it — the program ignores them.
+Change the values, save the file and restart the program.
 
 ```json
 {
-  // Папка, куда сохраняются загрузки. Можно указать любую.
+  // Folder where downloads are saved. Any folder works.
   "output_path": "C:/Users/me/Downloads",
 
-  // Язык интерфейса: "en" (English) или "uk" (Українська).
+  // Interface language: "en" (English) or "uk" (Українська).
   "language": "uk",
 
-  // Цвет градиента: "red", "green" или "turquoise".
+  // Gradient color: "red", "green" or "turquoise".
   "color_theme": "turquoise"
 }
 ```
 
-| Поле | Что задаёт | Варианты |
+| Field | What it sets | Options |
 |---|---|---|
-| `output_path` | папка для загрузок | любая папка: `C:/Users/me/Downloads`, `D:/Video` |
-| `language` | язык интерфейса | `en` — English, `uk` — Українська |
-| `color_theme` | цвет градиента | `red`, `green`, `turquoise` |
+| `output_path` | download folder | any folder: `C:/Users/me/Downloads`, `D:/Video` |
+| `language` | interface language | `en` — English, `uk` — Українська |
+| `color_theme` | gradient color | `red`, `green`, `turquoise` |
 
-По умолчанию: `~/Downloads`, `en`, `turquoise`. Если файла нет, программа
-создаст его сама.
+Defaults: `~/Downloads`, `en`, `turquoise`. If the file is missing, the program
+creates it automatically.
 
 ## FFmpeg
 
-FFmpeg скачивается в папку `ffmpeg/` рядом с программой, если не найден
-рядом, в `PATH` или стандартных каталогах.
+FFmpeg is downloaded into the `ffmpeg/` folder next to the program if it is not
+found nearby, in `PATH` or in the standard locations.
 
-- **Windows** — `github.com/yt-dlp/FFmpeg-Builds` (запасной: `github.com/BtbN/FFmpeg-Builds`)
-- **Linux** — `github.com/BtbN/FFmpeg-Builds` (запасной: `johnvansickle.com`)
+- **Windows** — `github.com/yt-dlp/FFmpeg-Builds` (fallback: `github.com/BtbN/FFmpeg-Builds`)
+- **Linux** — `github.com/BtbN/FFmpeg-Builds` (fallback: `johnvansickle.com`)
 - **macOS** — `osxexperts.net`
 
-Свой путь можно указать переменной `YUDL_FFMPEG`.
+You can point to your own copy with the `YUDL_FFMPEG` environment variable.
 
-## Структура проекта
+## Project structure
 
 ```
-main.go       весь код программы
-go.mod        модуль и зависимости
-go.sum        контрольные суммы зависимостей
-README.md     этот файл
-settings.json настройки (с комментариями)
-LICENSE       лицензия MIT
-bin/          собранный бинарник
-ffmpeg/       скачанный FFmpeg (создаётся автоматически)
+main.go        all program code
+go.mod         module and dependencies
+go.sum         dependency checksums
+README.md      English readme
+README.uk.md   Ukrainian readme
+settings.json  settings (with comments)
+LICENSE        MIT license
+bin/           built binary
+ffmpeg/        downloaded FFmpeg (created automatically)
 ```
 
-## Лицензия
+## License
 
 [MIT](LICENSE) © 2026 RoboLask
