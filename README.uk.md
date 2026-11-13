@@ -2,6 +2,13 @@
 
 [English](README.md) | **Українська**
 
+![Version](https://img.shields.io/badge/version-1-blue)
+![Go](https://img.shields.io/badge/go-1.24%2B-00ADD8?logo=go&logoColor=white)
+![Bubble Tea](https://img.shields.io/badge/Bubble%20Tea-FF75B7?logo=go&logoColor=white)
+![FFmpeg](https://img.shields.io/badge/FFmpeg-auto--download-007808?logo=ffmpeg&logoColor=white)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 <p align="center">
   <img src="docs/screenshot.png" alt="yudl-tui-v1 screenshot" width="500">
 </p>
